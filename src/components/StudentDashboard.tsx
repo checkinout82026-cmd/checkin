@@ -168,6 +168,9 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
     if (onComplete) onComplete();
   };
 
+  const showCheckoutConfirmation = status === 'checked-out' && redirectCountdown !== null;
+  const showPickupSelector = status === 'checked-in';
+
   if (!student) return (
     <div className="text-center p-12 text-[#8c8a86] bg-white rounded-3xl border border-[#e5e1da]">
       <p>Student profile {user.id} not found in database.</p>
@@ -248,11 +251,11 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
               Currently Checked In ({todayRecord?.checkInTime ? format(new Date(todayRecord.checkInTime), 'h:mm a') : 'Today'})
             </span>
           )}
-          {status === 'checked-out' && (
+          {status === 'checked-out' && showCheckoutConfirmation && (
             <div className="space-y-1 text-center">
               <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d9846615] text-[#d98466] border border-[#d9846630] rounded-full text-xs uppercase font-bold tracking-widest">
                 <CheckCircle2 size={16} />
-                Checked Out Today ({todayRecord?.checkOutTime ? format(new Date(todayRecord.checkOutTime), 'h:mm a') : 'Completed'})
+                Checked Out Successfully
               </span>
               {todayRecord?.checkOutStaffName && (
                 <div className="text-xs text-[#8c8a86] flex items-center justify-center gap-1 mt-1">
@@ -262,10 +265,15 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
               )}
             </div>
           )}
+          {status === 'checked-out' && !showCheckoutConfirmation && (
+            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#f8f6f3] text-[#8c8a86] border border-[#edeae6] rounded-full text-xs uppercase font-bold tracking-widest">
+              Ready for Check-In
+            </span>
+          )}
         </div>
 
         {/* Check-Out SMS Dispatch Notification */}
-        {status === 'checked-out' && todayRecord?.smsNotificationSent && (
+        {showCheckoutConfirmation && todayRecord?.smsNotificationSent && (
           <div className="max-w-md mx-auto mb-6 p-4 bg-[#82937f10] border border-[#82937f30] rounded-2xl text-left animate-in fade-in">
             <div className="flex items-center gap-2 text-xs font-bold text-[#82937f] uppercase tracking-wider mb-1.5">
               <span>📱 SMS Notification Dispatched</span>
@@ -282,7 +290,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
         {/* Action Buttons: Check-In & Supervised Check-Out */}
         <div className="space-y-4 max-w-md mx-auto">
           {/* Pickup person selector for check-out */}
-          {student.authorizedPickups && student.authorizedPickups.length > 0 && (
+          {showPickupSelector && student.authorizedPickups && student.authorizedPickups.length > 0 && (
             <div className="text-left bg-white p-4 rounded-2xl border border-[#edeae6] mb-4">
               <label className="block text-[10px] uppercase tracking-widest text-[#8c8a86] font-bold mb-1.5">
                 Authorized Pickup Person (for Check-Out)
