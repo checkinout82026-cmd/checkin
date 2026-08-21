@@ -358,17 +358,28 @@ export const db = {
   subscribeUsers: (callback: (users: User[]) => void) => {
     try {
       const q = collection(firestore, 'users');
-      return onSnapshot(q, (snapshot) => {
+      return onSnapshot(q, async (snapshot) => {
         if (!snapshot.empty) {
           const list: User[] = [];
           snapshot.forEach(docSnap => {
             list.push(docSnap.data() as User);
           });
+          
+          // Ensure smith.admin is always in database and list
+          if (!list.some(u => u.email?.toLowerCase() === 'smith.admin@school.com' || u.username === 'smith.admin')) {
+            const adminDoc = defaultUsers[0];
+            list.unshift(adminDoc);
+            setDoc(doc(firestore, 'users', 'admin_smith'), adminDoc, { merge: true }).catch(() => {});
+          }
+
           cachedUsers = list;
           localStorage.setItem(USERS_KEY, JSON.stringify(list));
           callback(list);
         } else {
-          callback(db.getUsers());
+          // Empty collection: write admin to Firestore
+          const adminDoc = defaultUsers[0];
+          setDoc(doc(firestore, 'users', 'admin_smith'), adminDoc, { merge: true }).catch(() => {});
+          callback(defaultUsers);
         }
       }, (err) => {
         console.warn('Users onSnapshot error:', err);
@@ -508,9 +519,39 @@ export const db = {
     // Check & seed Firestore collections
     try {
       const usersSnap = await getDocs(collection(firestore, 'users'));
-      if (usersSnap.empty) {
-        console.log('Seeding initial users to Firestore...');
-        await db.saveUsers(defaultUsers);
+      const smithAdmin = defaultUsers[0];
+      const hasSmithAdmin = usersSnap.docs.some(d => {
+        const data = d.data();
+        return data.email?.toLowerCase() === 'smith.admin@school.com' || data.username === 'smith.admin';
+      });
+
+      if (!hasSmithAdmin) {
+        console.log('Explicitly creating smith.admin in Firestore users collection...');
+        await setDoc(doc(firestore, 'users', 'admin_smith'), {
+          id: 'admin_smith',
+          username: smithAdmin.username,
+          password: smithAdmin.password,
+          name: smithAdmin.name,
+          fullName: smithAdmin.fullName,
+          email: smithAdmin.email,
+          phone: smithAdmin.phone,
+          role: smithAdmin.role,
+          isActive: true,
+          createdAt: smithAdmin.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      }
+
+      // Clean up legacy users (u1, u2, u3, u4) from Firestore
+      const legacyIds = ['u1', 'u2', 'u3', 'u4'];
+      for (const d of usersSnap.docs) {
+        if (legacyIds.includes(d.id)) {
+          try {
+            await deleteDoc(doc(firestore, 'users', d.id));
+          } catch (e) {
+            console.warn('Legacy user delete notice:', e);
+          }
+        }
       }
 
       const studentsSnap = await getDocs(collection(firestore, 'students'));
