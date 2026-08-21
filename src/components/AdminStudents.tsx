@@ -103,11 +103,34 @@ export function AdminStudents() {
     setNotes('');
   };
 
+  const handleResetTo10 = async () => {
+    if (confirm('This will reset the student roster to the 10 default students and remove all other student records in Firebase. Continue?')) {
+      const loadingToast = toast.loading('Syncing 10 students to Firebase...');
+      await db.resetTo10Students();
+      toast.dismiss(loadingToast);
+      toast.success('Roster successfully updated to 10 students');
+    }
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-serif font-semibold text-[#4a4a48]">Manage Students</h1>
-        <p className="text-[#8c8a86] mt-1 text-sm">Add, edit, or remove student records with real-time Firebase synchronization.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-serif font-semibold text-[#4a4a48]">Manage Students</h1>
+            <span className="px-2.5 py-0.5 text-xs font-semibold bg-[#82937f]/15 text-[#5e705b] rounded-full">
+              {students.length} Students
+            </span>
+          </div>
+          <p className="text-[#8c8a86] mt-1 text-sm">Add, edit, or remove student records with real-time Firebase synchronization.</p>
+        </div>
+        <button
+          type="button"
+          onClick={handleResetTo10}
+          className="self-start sm:self-auto px-4 py-2.5 bg-[#f2efe9] hover:bg-[#edeae6] text-[#6b6966] font-medium text-xs rounded-xl transition-colors border border-[#e5e1da]"
+        >
+          Reset to 10 Students
+        </button>
       </div>
 
       <div className="bg-white p-6 rounded-[32px] border border-[#e5e1da] shadow-sm">

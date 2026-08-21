@@ -1,9 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { db } from '../lib/db';
 import { AttendanceRecord, Student, User } from '../types';
+import { StaffApprovalModal } from './StaffApprovalModal';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
-import { CheckCircle2, Clock, UserCheck, UserMinus, ArrowLeft, RotateCcw } from 'lucide-react';
+import { CheckCircle2, UserCheck, UserMinus, ArrowLeft, RotateCcw, ShieldCheck, Lock } from 'lucide-react';
 
 interface StudentDashboardProps {
   user: User;
@@ -16,6 +17,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [pickupPerson, setPickupPerson] = useState('');
+  const [showStaffModal, setShowStaffModal] = useState(false);
   const [redirectCountdown, setRedirectCountdown] = useState<number | null>(null);
   const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -64,9 +66,9 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
 
   // Handle automatic return to check-in screen
   const triggerAutoReturn = () => {
-    setRedirectCountdown(3);
+    setRedirectCountdown(4);
     
-    let count = 3;
+    let count = 4;
     const interval = setInterval(() => {
       count -= 1;
       setRedirectCountdown(count);
@@ -113,9 +115,18 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
     }
   };
 
-  const handleCheckOut = async () => {
+  // Student initiates check-out -> Opens Staff Authorization Modal
+  const handleInitiateCheckOut = () => {
     if (!student || isProcessing) return;
+    setShowStaffModal(true);
+  };
+
+  // Check-out executed ONLY after staff enters valid password in modal
+  const handleStaffApprovedCheckOut = async (authorizingStaff: User) => {
+    if (!student) return;
+    setShowStaffModal(false);
     setIsProcessing(true);
+
     try {
       const now = new Date().toISOString();
       const today = format(new Date(), 'yyyy-MM-dd');
@@ -129,6 +140,8 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
         checkInTime: todayRecord?.checkInTime || now,
         checkInMethod: todayRecord?.checkInMethod || 'student_self',
         checkOutTime: now,
+        checkOutStaffId: authorizingStaff.id,
+        checkOutStaffName: authorizingStaff.name,
         pickupPerson: pickupPerson || student.parent?.name || 'Self',
         pickupPersonName: pickupPerson || student.parent?.name || 'Self',
         smsNotificationSent: true,
@@ -140,7 +153,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
       await db.saveAttendanceRecord(updatedRecord);
       setTodayRecord(updatedRecord);
       setStatus('checked-out');
-      toast.success(`Check-out recorded! Goodbye, ${student.name}.`, { duration: 3000 });
+      toast.success(`Check-out approved by ${authorizingStaff.name}! Goodbye, ${student.name}.`, { duration: 4000 });
       triggerAutoReturn();
     } catch (err) {
       console.error(err);
@@ -174,7 +187,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
       <div className="flex items-center justify-between">
         <button
           onClick={handleImmediateBack}
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#8c8a86] hover:text-[#4a4a48] px-3 py-2 rounded-xl hover:bg-[#f2efe9] transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-bold text-[#8c8a86] hover:text-[#4a4a48] px-3 py-2 rounded-xl hover:bg-[#f2efe9] transition-colors cursor-pointer"
         >
           <ArrowLeft size={16} />
           Back to Kiosk
@@ -194,7 +207,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
             </div>
             <button
               onClick={handleImmediateBack}
-              className="px-4 py-1.5 bg-[#82937f] hover:opacity-90 text-white font-bold text-xs rounded-xl transition-all shadow-sm shrink-0"
+              className="px-4 py-1.5 bg-[#82937f] hover:opacity-90 text-white font-bold text-xs rounded-xl transition-all shadow-sm shrink-0 cursor-pointer"
             >
               Next Student Now
             </button>
@@ -236,10 +249,18 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
             </span>
           )}
           {status === 'checked-out' && (
-            <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d9846615] text-[#d98466] border border-[#d9846630] rounded-full text-xs uppercase font-bold tracking-widest">
-              <CheckCircle2 size={16} />
-              Checked Out Today ({todayRecord?.checkOutTime ? format(new Date(todayRecord.checkOutTime), 'h:mm a') : 'Completed'})
-            </span>
+            <div className="space-y-1 text-center">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d9846615] text-[#d98466] border border-[#d9846630] rounded-full text-xs uppercase font-bold tracking-widest">
+                <CheckCircle2 size={16} />
+                Checked Out Today ({todayRecord?.checkOutTime ? format(new Date(todayRecord.checkOutTime), 'h:mm a') : 'Completed'})
+              </span>
+              {todayRecord?.checkOutStaffName && (
+                <div className="text-xs text-[#8c8a86] flex items-center justify-center gap-1 mt-1">
+                  <ShieldCheck size={14} className="text-[#82937f]" />
+                  <span>Authorized by: <strong className="text-[#4a4a48]">{todayRecord.checkOutStaffName}</strong></span>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -258,7 +279,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
           </div>
         )}
 
-        {/* Action Buttons: Both Check-In and Check-Out available */}
+        {/* Action Buttons: Check-In & Supervised Check-Out */}
         <div className="space-y-4 max-w-md mx-auto">
           {/* Pickup person selector for check-out */}
           {student.authorizedPickups && student.authorizedPickups.length > 0 && (
@@ -284,7 +305,7 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
             <button
               onClick={handleCheckIn}
               disabled={isProcessing || status === 'checked-in'}
-              className={`w-full py-4 px-6 font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 text-base ${
+              className={`w-full py-4 px-6 font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 text-base cursor-pointer ${
                 status === 'checked-in'
                   ? 'bg-[#f2efe9] text-[#8c8a86] cursor-not-allowed opacity-60'
                   : 'bg-[#82937f] hover:opacity-90 text-white'
@@ -294,27 +315,37 @@ export function StudentDashboard({ user, onComplete }: StudentDashboardProps) {
               {isProcessing && status !== 'checked-in' ? 'Recording...' : 'Check In'}
             </button>
 
-            {/* Check Out Button */}
+            {/* Check Out Button (Requires Staff Verification) */}
             <button
-              onClick={handleCheckOut}
+              onClick={handleInitiateCheckOut}
               disabled={isProcessing || status === 'checked-out'}
-              className={`w-full py-4 px-6 font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 text-base ${
+              className={`w-full py-4 px-6 font-bold rounded-2xl transition-all shadow-sm flex items-center justify-center gap-2 text-base cursor-pointer ${
                 status === 'checked-out'
                   ? 'bg-[#f2efe9] text-[#8c8a86] cursor-not-allowed opacity-60'
                   : 'bg-[#d98466] hover:opacity-90 text-white'
               }`}
             >
               <UserMinus size={20} />
+              <Lock size={16} className="opacity-80" />
               {isProcessing && status === 'checked-in' ? 'Recording...' : 'Check Out'}
             </button>
           </div>
 
-          <p className="text-xs text-[#8c8a86] pt-2">
-            Select your activity above. The terminal will automatically reset for the next student.
-          </p>
+          <div className="flex items-center justify-center gap-1.5 text-xs text-[#8c8a86] pt-2">
+            <Lock size={13} className="text-[#8c8a86]" />
+            <span>Student check-out requires staff authentication to ensure student safety.</span>
+          </div>
         </div>
       </div>
+
+      {/* Staff Approval Modal */}
+      <StaffApprovalModal
+        isOpen={showStaffModal}
+        onClose={() => setShowStaffModal(false)}
+        student={student}
+        pickupPerson={pickupPerson || 'Self / Parent'}
+        onApproved={handleStaffApprovedCheckOut}
+      />
     </div>
   );
 }
-

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { db } from './lib/db';
+import { subscribeToAuthState, signOutFirebase } from './lib/auth';
 import { User } from './types';
 import { Toaster } from 'react-hot-toast';
 
@@ -20,13 +21,30 @@ export default function App() {
     // Initialize DB with seed data if empty
     db.init();
     
-    // Check local storage for persistent session during development
+    // Check local storage for persistent session or student session
     const storedUser = localStorage.getItem('activeUser');
     if (storedUser) {
-      const u = JSON.parse(storedUser);
-      setUser(u);
-      setActiveTab(u.role === 'admin' ? 'attendance' : u.role === 'student' ? 'student_dashboard' : 'checkin');
+      try {
+        const u = JSON.parse(storedUser);
+        setUser(u);
+        setActiveTab(u.role === 'admin' ? 'attendance' : u.role === 'student' ? 'student_dashboard' : 'checkin');
+      } catch (e) {
+        console.warn('Failed to parse activeUser:', e);
+      }
     }
+
+    // Subscribe to Firebase Auth state
+    const unsubscribeAuth = subscribeToAuthState((appUser) => {
+      if (appUser) {
+        setUser(appUser);
+        localStorage.setItem('activeUser', JSON.stringify(appUser));
+        setActiveTab(appUser.role === 'admin' ? 'attendance' : 'checkin');
+      }
+    });
+
+    return () => {
+      if (typeof unsubscribeAuth === 'function') unsubscribeAuth();
+    };
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
@@ -35,7 +53,12 @@ export default function App() {
     setActiveTab(loggedInUser.role === 'admin' ? 'attendance' : loggedInUser.role === 'student' ? 'student_dashboard' : 'checkin');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOutFirebase();
+    } catch (e) {
+      console.warn('Sign out error:', e);
+    }
     setUser(null);
     localStorage.removeItem('activeUser');
   };

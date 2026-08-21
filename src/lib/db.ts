@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 import { firestore } from './firebase';
 import { User, Student, AttendanceRecord, AuthorizedPickupPerson } from '../types';
-import { generate150Students } from './seedData';
+import { TEN_STUDENTS, generate10Students } from './seedData';
 
 const USERS_KEY = 'checkin_users';
 const STUDENTS_KEY = 'checkin_students';
@@ -19,60 +19,21 @@ const ATTENDANCE_KEY = 'checkin_attendance';
 
 export const defaultUsers: User[] = [
   { 
-    id: 'u1', 
-    username: 'admin1', 
-    password: 'password', 
+    id: 'admin_smith', 
+    username: 'smith.admin', 
+    password: 'AdminSmith#2026', 
     role: 'admin', 
-    name: 'Alice Admin', 
-    fullName: 'Alice Admin', 
-    email: 'alice.admin@school.org', 
-    phone: '555-0191', 
+    name: 'Smith Admin', 
+    fullName: 'Smith Admin', 
+    email: 'smith.admin@school.com', 
+    phone: '555-0100', 
     isActive: true, 
     createdAt: new Date().toISOString(), 
     updatedAt: new Date().toISOString() 
-  },
-  { 
-    id: 'u2', 
-    username: 'admin2', 
-    password: 'password', 
-    role: 'admin', 
-    name: 'Bob Admin', 
-    fullName: 'Bob Admin', 
-    email: 'bob.admin@school.org', 
-    phone: '555-0192', 
-    isActive: true, 
-    createdAt: new Date().toISOString(), 
-    updatedAt: new Date().toISOString() 
-  },
-  { 
-    id: 'u3', 
-    username: 'staff1', 
-    password: 'password', 
-    role: 'staff', 
-    name: 'Charlie Staff', 
-    fullName: 'Charlie Staff', 
-    email: 'charlie.staff@school.org', 
-    phone: '555-0193', 
-    isActive: true, 
-    createdAt: new Date().toISOString(), 
-    updatedAt: new Date().toISOString() 
-  },
-  { 
-    id: 'u4', 
-    username: 'staff2', 
-    password: 'password', 
-    role: 'staff', 
-    name: 'Diana Staff', 
-    fullName: 'Diana Staff', 
-    email: 'diana.staff@school.org', 
-    phone: '555-0194', 
-    isActive: true, 
-    createdAt: new Date().toISOString(), 
-    updatedAt: new Date().toISOString() 
-  },
+  }
 ];
 
-export const defaultStudents: Student[] = generate150Students();
+export const defaultStudents: Student[] = TEN_STUDENTS;
 
 // In-memory cache synced with Firestore and local fallback
 let cachedUsers: User[] = defaultUsers;
@@ -357,10 +318,40 @@ export const db = {
     }
   },
 
-  seed150Students: async () => {
-    const list = generate150Students();
+  seed10Students: async () => {
+    const list = generate10Students();
     await db.saveStudents(list);
     return list;
+  },
+
+  // Prune database and keep only the 10 standard students
+  resetTo10Students: async () => {
+    try {
+      const studentsSnap = await getDocs(collection(firestore, 'students'));
+      const validIds = new Set(TEN_STUDENTS.map(s => s.id));
+      
+      const batch = writeBatch(firestore);
+      let excessCount = 0;
+      studentsSnap.forEach(docSnap => {
+        if (!validIds.has(docSnap.id)) {
+          batch.delete(docSnap.ref);
+          excessCount++;
+        }
+      });
+      if (excessCount > 0) {
+        await batch.commit();
+      }
+
+      await db.saveStudents(TEN_STUDENTS);
+      cachedStudents = TEN_STUDENTS;
+      localStorage.setItem(STUDENTS_KEY, JSON.stringify(TEN_STUDENTS));
+      return TEN_STUDENTS;
+    } catch (e) {
+      console.warn('resetTo10Students error:', e);
+      cachedStudents = TEN_STUDENTS;
+      localStorage.setItem(STUDENTS_KEY, JSON.stringify(TEN_STUDENTS));
+      return TEN_STUDENTS;
+    }
   },
 
   // Listeners for real-time sync with Firebase
@@ -458,20 +449,57 @@ export const db = {
     }
   },
 
-  // Seed DB in Firestore if empty
+  // Seed DB in Firestore if empty or clean up excess students
   init: async () => {
     if (initialized) return;
     initialized = true;
 
-    // Load local storage first for instant render
-    if (!localStorage.getItem(USERS_KEY)) {
+    // Clean legacy test users from local storage if present
+    const localUsersData = localStorage.getItem(USERS_KEY);
+    if (!localUsersData) {
       localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
       cachedUsers = defaultUsers;
+    } else {
+      try {
+        const parsed: User[] = JSON.parse(localUsersData);
+        const legacyIds = new Set(['u1', 'u2', 'u3', 'u4']);
+        const hasLegacy = parsed.some(u => legacyIds.has(u.id));
+        if (hasLegacy) {
+          const filtered = parsed.filter(u => !legacyIds.has(u.id));
+          if (!filtered.some(u => u.email === 'smith.admin@school.com')) {
+            filtered.unshift(defaultUsers[0]);
+          }
+          localStorage.setItem(USERS_KEY, JSON.stringify(filtered));
+          cachedUsers = filtered;
+        } else {
+          cachedUsers = parsed;
+        }
+      } catch {
+        localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
+        cachedUsers = defaultUsers;
+      }
     }
-    if (!localStorage.getItem(STUDENTS_KEY)) {
+    
+    // Enforce 10 students in local cache if larger or empty
+    const localStudentsData = localStorage.getItem(STUDENTS_KEY);
+    if (!localStudentsData) {
       localStorage.setItem(STUDENTS_KEY, JSON.stringify(defaultStudents));
       cachedStudents = defaultStudents;
+    } else {
+      try {
+        const parsed = JSON.parse(localStudentsData);
+        if (parsed.length > 10) {
+          localStorage.setItem(STUDENTS_KEY, JSON.stringify(defaultStudents));
+          cachedStudents = defaultStudents;
+        } else {
+          cachedStudents = parsed;
+        }
+      } catch {
+        localStorage.setItem(STUDENTS_KEY, JSON.stringify(defaultStudents));
+        cachedStudents = defaultStudents;
+      }
     }
+
     if (!localStorage.getItem(ATTENDANCE_KEY)) {
       localStorage.setItem(ATTENDANCE_KEY, JSON.stringify([]));
       cachedAttendance = [];
@@ -487,8 +515,11 @@ export const db = {
 
       const studentsSnap = await getDocs(collection(firestore, 'students'));
       if (studentsSnap.empty) {
-        console.log('Seeding initial students to Firestore...');
+        console.log('Seeding initial 10 students to Firestore...');
         await db.saveStudents(defaultStudents);
+      } else if (studentsSnap.size > 10) {
+        console.log(`Pruning excess students from Firestore (${studentsSnap.size} found, keeping 10)...`);
+        await db.resetTo10Students();
       }
 
       // Also seed authorized_pickups collection for relational representation

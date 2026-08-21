@@ -263,8 +263,8 @@ export function AdminAttendance() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-serif font-semibold text-[#4a4a48]">Attendance & Audit Logs</h1>
-          <p className="text-[#8c8a86] mt-1 text-sm">View, search, correct, or manually record student attendance records with Firebase Firestore sync.</p>
+          <h1 className="text-2xl font-serif font-semibold text-[#4a4a48]">Attendance Records</h1>
+          <p className="text-[#8c8a86] mt-1 text-sm">View, search, correct, or manually record student attendance records.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button
@@ -299,7 +299,7 @@ export function AdminAttendance() {
           </div>
           <div>
             <div className="text-2xl font-serif font-bold text-[#4a4a48]">{totalCheckIns}</div>
-            <div className="text-xs text-[#8c8a86] uppercase font-bold tracking-widest">Total Logs Shown</div>
+            <div className="text-xs text-[#8c8a86] uppercase font-bold tracking-widest">Total Records</div>
           </div>
         </div>
 
@@ -309,7 +309,7 @@ export function AdminAttendance() {
           </div>
           <div>
             <div className="text-2xl font-serif font-bold text-[#82937f]">{activeCheckIns}</div>
-            <div className="text-xs text-[#8c8a86] uppercase font-bold tracking-widest">Currently On-Site</div>
+            <div className="text-xs text-[#8c8a86] uppercase font-bold tracking-widest">Currently Checked In</div>
           </div>
         </div>
 
@@ -415,9 +415,9 @@ export function AdminAttendance() {
                       <button 
                         onClick={() => openEditModal(r)}
                         className="inline-flex items-center gap-1 text-[#82937f] hover:opacity-80 font-bold uppercase tracking-wider text-[10px]"
-                        title="Correct Record"
+                        title="Edit Record"
                       >
-                        <Edit3 size={12} /> Correct
+                        <Edit3 size={12} /> Edit
                       </button>
                       <button 
                         onClick={() => handleDeleteRecord(r.id, studentDisplayName)}

@@ -1,80 +1,254 @@
 import { Student } from '../types';
 
-const firstNames = [
-  'Liam', 'Olivia', 'Noah', 'Emma', 'Oliver', 'Charlotte', 'James', 'Amelia', 'Elijah', 'Sophia',
-  'William', 'Isabella', 'Henry', 'Mia', 'Lucas', 'Evelyn', 'Benjamin', 'Harper', 'Theodore', 'Camila',
-  'Mateo', 'Gianna', 'Levi', 'Abigail', 'Sebastian', 'Luna', 'Daniel', 'Ella', 'Jack', 'Emily',
-  'Alexander', 'Aria', 'Owen', 'Chloe', 'Asher', 'Penelope', 'Samuel', 'Layla', 'Ethan', 'Mila',
-  'Leo', 'Nora', 'Jackson', 'Hazel', 'Mason', 'Madison', 'Ezra', 'Ellie', 'John', 'Lily',
-  'Hudson', 'Nova', 'Luca', 'Isla', 'Aiden', 'Grace', 'David', 'Violet', 'Jacob', 'Aurora',
-  'Logan', 'Riley', 'Luke', 'Zoey', 'Julian', 'Willow', 'Gabriel', 'Emilia', 'Grayson', 'Stella',
-  'Wyatt', 'Everly', 'Matthew', 'Hannah', 'Maverick', 'Leah', 'Carter', 'Eliana', 'Isaac', 'Ivy',
-  'Jayden', 'Kinsley', 'Anthony', 'Paisley', 'Dylan', 'Addison', 'Lincoln', 'Eleanor', 'Thomas', 'Victoria'
-];
-
-const lastNames = [
-  'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
-  'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
-  'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
-  'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
-  'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts'
-];
-
-const grades = [
-  'Kindergarten', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8'
-];
-
-const adultRelationships = [
-  'Mother', 'Father', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Family Friend'
-];
-
-export function generate150Students(): Student[] {
-  const students: Student[] = [];
-  const baseDate = new Date().toISOString();
-
-  for (let i = 0; i < 150; i++) {
-    const id = (1001 + i).toString();
-    const firstName = firstNames[i % firstNames.length];
-    const lastName = lastNames[i % lastNames.length];
-    const studentName = `${firstName} ${lastName}`;
-    const grade = grades[i % grades.length];
-
-    const parentFirstName = firstNames[(i + 15) % firstNames.length];
-    const parentName = `${parentFirstName} ${lastName}`;
-    const parentPhone = `555-${String(1000 + (i * 7) % 9000).padStart(4, '0')}`;
-    const parentEmail = `${parentFirstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
-
-    const pickup2Name = `${firstNames[(i + 30) % firstNames.length]} ${lastName}`;
-    const pickup3Name = `${firstNames[(i + 45) % firstNames.length]} ${lastNames[(i + 10) % lastNames.length]} (${adultRelationships[i % adultRelationships.length]})`;
-
-    const authorizedPickups = [parentName, pickup2Name, pickup3Name];
-    const authorizedPickupDetails = [
-      { name: parentName, relationship: 'Primary Guardian', phone: parentPhone, isPrimary: true },
-      { name: pickup2Name, relationship: 'Secondary Guardian', phone: `555-${String(2000 + (i * 7) % 8000).padStart(4, '0')}`, isPrimary: false },
-      { name: pickup3Name, relationship: adultRelationships[i % adultRelationships.length], phone: `555-${String(3000 + (i * 7) % 7000).padStart(4, '0')}`, isPrimary: false }
-    ];
-
-    students.push({
-      id,
-      name: studentName,
-      fullName: studentName,
-      gradeLevel: grade,
-      parent: {
-        name: parentName,
-        phone: parentPhone,
-        email: parentEmail
-      },
-      parentName,
-      parentPhone,
-      parentEmail,
-      authorizedPickups,
-      authorizedPickupDetails,
-      notes: i % 5 === 0 ? 'Allergic to peanuts' : '',
-      isActive: true,
-      createdAt: baseDate,
-      updatedAt: baseDate
-    });
+export const TEN_STUDENTS: Student[] = [
+  {
+    id: '1001',
+    name: 'Liam Smith',
+    fullName: 'Liam Smith',
+    gradeLevel: 'Kindergarten',
+    parent: {
+      name: 'Olivia Smith',
+      phone: '555-0101',
+      email: 'olivia.smith@example.com'
+    },
+    parentName: 'Olivia Smith',
+    parentPhone: '555-0101',
+    parentEmail: 'olivia.smith@example.com',
+    authorizedPickups: ['Olivia Smith', 'James Smith', 'Emma Miller (Aunt)'],
+    authorizedPickupDetails: [
+      { name: 'Olivia Smith', relationship: 'Mother', phone: '555-0101', isPrimary: true },
+      { name: 'James Smith', relationship: 'Father', phone: '555-0102', isPrimary: false },
+      { name: 'Emma Miller', relationship: 'Aunt', phone: '555-0103', isPrimary: false }
+    ],
+    notes: 'Allergic to peanuts. Requires EpiPen on hand.',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1002',
+    name: 'Noah Johnson',
+    fullName: 'Noah Johnson',
+    gradeLevel: 'Grade 1',
+    parent: {
+      name: 'Sophia Johnson',
+      phone: '555-0104',
+      email: 'sophia.johnson@example.com'
+    },
+    parentName: 'Sophia Johnson',
+    parentPhone: '555-0104',
+    parentEmail: 'sophia.johnson@example.com',
+    authorizedPickups: ['Sophia Johnson', 'Lucas Johnson', 'Charlotte Davis (Grandmother)'],
+    authorizedPickupDetails: [
+      { name: 'Sophia Johnson', relationship: 'Mother', phone: '555-0104', isPrimary: true },
+      { name: 'Lucas Johnson', relationship: 'Father', phone: '555-0105', isPrimary: false },
+      { name: 'Charlotte Davis', relationship: 'Grandmother', phone: '555-0106', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1003',
+    name: 'Emma Williams',
+    fullName: 'Emma Williams',
+    gradeLevel: 'Grade 2',
+    parent: {
+      name: 'Henry Williams',
+      phone: '555-0107',
+      email: 'henry.williams@example.com'
+    },
+    parentName: 'Henry Williams',
+    parentPhone: '555-0107',
+    parentEmail: 'henry.williams@example.com',
+    authorizedPickups: ['Henry Williams', 'Isabella Williams', 'Evelyn Taylor (Aunt)'],
+    authorizedPickupDetails: [
+      { name: 'Henry Williams', relationship: 'Father', phone: '555-0107', isPrimary: true },
+      { name: 'Isabella Williams', relationship: 'Mother', phone: '555-0108', isPrimary: false },
+      { name: 'Evelyn Taylor', relationship: 'Aunt', phone: '555-0109', isPrimary: false }
+    ],
+    notes: 'Asthma inhaler in nurse office.',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1004',
+    name: 'Oliver Brown',
+    fullName: 'Oliver Brown',
+    gradeLevel: 'Grade 3',
+    parent: {
+      name: 'Harper Brown',
+      phone: '555-0110',
+      email: 'harper.brown@example.com'
+    },
+    parentName: 'Harper Brown',
+    parentPhone: '555-0110',
+    parentEmail: 'harper.brown@example.com',
+    authorizedPickups: ['Harper Brown', 'Theodore Brown', 'Benjamin Brown (Uncle)'],
+    authorizedPickupDetails: [
+      { name: 'Harper Brown', relationship: 'Mother', phone: '555-0110', isPrimary: true },
+      { name: 'Theodore Brown', relationship: 'Father', phone: '555-0111', isPrimary: false },
+      { name: 'Benjamin Brown', relationship: 'Uncle', phone: '555-0112', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1005',
+    name: 'Amelia Jones',
+    fullName: 'Amelia Jones',
+    gradeLevel: 'Grade 4',
+    parent: {
+      name: 'Elijah Jones',
+      phone: '555-0113',
+      email: 'elijah.jones@example.com'
+    },
+    parentName: 'Elijah Jones',
+    parentPhone: '555-0113',
+    parentEmail: 'elijah.jones@example.com',
+    authorizedPickups: ['Elijah Jones', 'Camila Jones', 'Gianna White (Grandmother)'],
+    authorizedPickupDetails: [
+      { name: 'Elijah Jones', relationship: 'Father', phone: '555-0113', isPrimary: true },
+      { name: 'Camila Jones', relationship: 'Mother', phone: '555-0114', isPrimary: false },
+      { name: 'Gianna White', relationship: 'Grandmother', phone: '555-0115', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1006',
+    name: 'Lucas Garcia',
+    fullName: 'Lucas Garcia',
+    gradeLevel: 'Grade 5',
+    parent: {
+      name: 'Mateo Garcia',
+      phone: '555-0116',
+      email: 'mateo.garcia@example.com'
+    },
+    parentName: 'Mateo Garcia',
+    parentPhone: '555-0116',
+    parentEmail: 'mateo.garcia@example.com',
+    authorizedPickups: ['Mateo Garcia', 'Elena Garcia', 'Carlos Garcia (Uncle)'],
+    authorizedPickupDetails: [
+      { name: 'Mateo Garcia', relationship: 'Father', phone: '555-0116', isPrimary: true },
+      { name: 'Elena Garcia', relationship: 'Mother', phone: '555-0117', isPrimary: false },
+      { name: 'Carlos Garcia', relationship: 'Uncle', phone: '555-0118', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1007',
+    name: 'Mia Miller',
+    fullName: 'Mia Miller',
+    gradeLevel: 'Grade 6',
+    parent: {
+      name: 'Abigail Miller',
+      phone: '555-0119',
+      email: 'abigail.miller@example.com'
+    },
+    parentName: 'Abigail Miller',
+    parentPhone: '555-0119',
+    parentEmail: 'abigail.miller@example.com',
+    authorizedPickups: ['Abigail Miller', 'David Miller', 'Grace Clark (Aunt)'],
+    authorizedPickupDetails: [
+      { name: 'Abigail Miller', relationship: 'Mother', phone: '555-0119', isPrimary: true },
+      { name: 'David Miller', relationship: 'Father', phone: '555-0120', isPrimary: false },
+      { name: 'Grace Clark', relationship: 'Aunt', phone: '555-0121', isPrimary: false }
+    ],
+    notes: 'Lactose intolerant.',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1008',
+    name: 'Evelyn Davis',
+    fullName: 'Evelyn Davis',
+    gradeLevel: 'Grade 7',
+    parent: {
+      name: 'Alexander Davis',
+      phone: '555-0122',
+      email: 'alexander.davis@example.com'
+    },
+    parentName: 'Alexander Davis',
+    parentPhone: '555-0122',
+    parentEmail: 'alexander.davis@example.com',
+    authorizedPickups: ['Alexander Davis', 'Chloe Davis', 'Owen Davis (Brother)'],
+    authorizedPickupDetails: [
+      { name: 'Alexander Davis', relationship: 'Father', phone: '555-0122', isPrimary: true },
+      { name: 'Chloe Davis', relationship: 'Mother', phone: '555-0123', isPrimary: false },
+      { name: 'Owen Davis', relationship: 'Brother', phone: '555-0124', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1009',
+    name: 'James Rodriguez',
+    fullName: 'James Rodriguez',
+    gradeLevel: 'Grade 8',
+    parent: {
+      name: 'Layla Rodriguez',
+      phone: '555-0125',
+      email: 'layla.rodriguez@example.com'
+    },
+    parentName: 'Layla Rodriguez',
+    parentPhone: '555-0125',
+    parentEmail: 'layla.rodriguez@example.com',
+    authorizedPickups: ['Layla Rodriguez', 'Samuel Rodriguez', 'Ethan Martinez (Family Friend)'],
+    authorizedPickupDetails: [
+      { name: 'Layla Rodriguez', relationship: 'Mother', phone: '555-0125', isPrimary: true },
+      { name: 'Samuel Rodriguez', relationship: 'Father', phone: '555-0126', isPrimary: false },
+      { name: 'Ethan Martinez', relationship: 'Family Friend', phone: '555-0127', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: '1010',
+    name: 'Sophia Martinez',
+    fullName: 'Sophia Martinez',
+    gradeLevel: 'Grade 2',
+    parent: {
+      name: 'Daniel Martinez',
+      phone: '555-0128',
+      email: 'daniel.martinez@example.com'
+    },
+    parentName: 'Daniel Martinez',
+    parentPhone: '555-0128',
+    parentEmail: 'daniel.martinez@example.com',
+    authorizedPickups: ['Daniel Martinez', 'Lily Martinez', 'Jack Wilson (Uncle)'],
+    authorizedPickupDetails: [
+      { name: 'Daniel Martinez', relationship: 'Father', phone: '555-0128', isPrimary: true },
+      { name: 'Lily Martinez', relationship: 'Mother', phone: '555-0129', isPrimary: false },
+      { name: 'Jack Wilson', relationship: 'Uncle', phone: '555-0130', isPrimary: false }
+    ],
+    notes: '',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
+];
 
-  return students;
+export function generate10Students(): Student[] {
+  return TEN_STUDENTS;
 }
+
+// Backwards compatibility alias
+export function generate150Students(): Student[] {
+  return TEN_STUDENTS;
+}
+
