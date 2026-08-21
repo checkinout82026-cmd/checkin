@@ -1,6 +1,6 @@
-# MVP Handover Documentation
+# MVP Documentation
 
-This folder is the handover pack for the ABC Community School check-in system MVP.
+This folder is the documentation for the ABC Community School check-in system MVP.
 
 Read these files in order:
 
