@@ -10,9 +10,10 @@ flowchart TD
 
   StudentId --> MatchStudent{Student found?}
   MatchStudent -->|No| StudentError[Show error]
-  MatchStudent -->|Yes| StudentDashboard[StudentDashboard]
+  MatchStudent -->|Yes| StudentDashboard
 
-  Credentials --> MatchUser{User credentials valid?}
+  Credentials --> FirebaseAuth[Firebase Auth email/password]
+  FirebaseAuth --> MatchUser{User credentials valid?}
   MatchUser -->|No| StaffError[Show error]
   MatchUser -->|Yes| Role{Role}
 
@@ -70,19 +71,38 @@ sequenceDiagram
   participant DB as db.ts
   participant FS as Firestore
 
+  participant StaffModal as StaffApprovalModal
+  participant Staff as Staff/Admin
+
   Student->>Dashboard: Select pickup person if available
   Student->>Dashboard: Click Check Out
-  Dashboard->>DB: saveAttendanceRecord(updated/new checked_out record)
+  Dashboard->>StaffModal: Open staff authorization modal
+  Staff->>StaffModal: Select staff/admin and enter password or security PIN
+  StaffModal->>DB: Read staff/admin users from local cache
+  StaffModal-->>Dashboard: Return approved staff/admin
+  Dashboard->>DB: saveAttendanceRecord(updated/new checked_out record with staff audit fields)
   DB->>FS: setDoc(attendance/{id})
   Dashboard-->>Student: Success toast
   Dashboard-->>Student: Show simulated SMS notification
   Dashboard-->>Student: Auto-return countdown
 ```
 
+### Staff Authorization Requirement
+
+A student cannot complete direct self-service check-out by clicking **Check Out** alone. The app opens `StaffApprovalModal`, where a staff member or administrator must:
+
+1. Select their staff/admin account.
+2. Enter their staff password or security PIN.
+3. Submit **Approve & Release**.
+
+The modal accepts the stored staff/admin password, the configured master admin fallback for `smith.admin`, or a minimum 4-character PIN only for newly created users without a stored local password. This is an MVP client-side check and should be replaced with server-enforced authorization before production use.
+
 ### Resulting Attendance Data
 
 - `status`: `checked_out`
 - `checkOutTime`: current ISO time
+- `checkOutStaffId`: approving staff/admin user ID
+- `checkOutStaffName`: approving staff/admin display name
 - `pickupPerson` and `pickupPersonName`: selected pickup or fallback
 - `smsNotificationSent`: `true`
 - `smsSentAt`: current ISO time
@@ -133,7 +153,7 @@ sequenceDiagram
 
 ### Pickup Validation
 
-The UI requires a pickup person string before completing staff-assisted check-out. The app does not validate custom pickup against a database-side policy.
+The UI requires a pickup person string before completing staff-assisted check-out. For student direct check-out, the UI also requires staff/admin approval through the Staff Password / Security PIN modal. The app does not validate custom pickup against a database-side policy, and the staff approval check is still client-side in the MVP.
 
 ## Admin Attendance Management
 

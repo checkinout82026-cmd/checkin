@@ -8,8 +8,9 @@
 | UI | React 19 | Components, state, rendering |
 | Build | Vite 6 | Dev server and production bundle |
 | Styling | Tailwind CSS 4 | Utility styling through `src/index.css` and Vite plugin |
+| Authentication | Firebase Auth | Staff/admin email/password sign-in and auth-state restore; Google sign-in and password reset are not completed |
 | Database | Firebase Firestore | Realtime document storage |
-| Data access | Firebase Web SDK | Browser-side reads/writes/subscriptions |
+| Data access | Firebase Web SDK | Browser-side auth, reads/writes/subscriptions |
 | Notifications | `react-hot-toast` | Toast success/error messages |
 | Icons | `lucide-react` | UI iconography |
 | Dates | `date-fns` | Date keys and display formatting |
@@ -26,8 +27,12 @@ flowchart TD
   DateFns[date-fns] --> Components
 
   Components --> DB[src/lib/db.ts]
+  Components --> AuthLib[src/lib/auth.ts]
   FirebaseSDK[firebase] --> DB
-  DB --> Firestore[(Firebase Firestore)]
+  FirebaseSDK --> AuthLib
+  AuthLib --> FirebaseAuth[(Firebase Auth)]
+  AuthLib --> Firestore[(Firebase Firestore)]
+  DB --> Firestore
   DB --> LocalStorage[(localStorage)]
 
   Vite[Vite] --> Bundle[Production dist bundle]
@@ -49,7 +54,7 @@ flowchart TD
 
 | Dependency | Why it exists |
 | --- | --- |
-| `firebase` | Firestore app initialization, document writes, batch writes, collection reads, realtime listeners |
+| `firebase` | Firebase app initialization, Auth email/password sign-in/sign-out/auth-state APIs, Firestore document writes, batch writes, collection reads, realtime listeners |
 | `react` / `react-dom` | Browser UI |
 | `date-fns` | `format(new Date(), 'yyyy-MM-dd')` day keys and display formatting |
 | `lucide-react` | Icons in login, dashboards, tables, and actions |
@@ -113,7 +118,19 @@ Most visual styling is inline through Tailwind utility class strings in componen
 
 ## Firebase SDK Usage
 
-Firestore operations used in `src/lib/db.ts`:
+Auth operations used in `src/lib/auth.ts`:
+
+| Function | Purpose |
+| --- | --- |
+| `signInWithEmailAndPassword` | Staff/admin email/password sign-in |
+| `createUserWithEmailAndPassword` | Staff/admin account creation/sync from admin UI or fallback flow |
+| `signInWithPopup` and `GoogleAuthProvider` | Present in helper code, but Google sign-in is not completed in the delivered flow |
+| `sendPasswordResetEmail` | Present in helper code, but password reset is not completed in the delivered flow |
+| `onAuthStateChanged` | Restore Firebase Auth sessions into app user state |
+| `signOut` | Firebase sign-out on app logout |
+| `updateProfile` | Store display name on Firebase Auth user |
+
+Firestore operations used in `src/lib/db.ts` and `src/lib/auth.ts`:
 
 | Function | Purpose |
 | --- | --- |

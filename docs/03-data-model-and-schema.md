@@ -183,8 +183,8 @@ Stores daily check-in/check-out records.
 | `checkInStaffName` | string or null | Optional | Denormalized staff display name |
 | `checkInMethod` | `kiosk`, `staff_manual`, `student_self` | Optional | Current app writes `staff_manual` or `student_self` |
 | `checkOutTime` | ISO string or null | Yes | Null means active/on-site |
-| `checkOutStaffId` | string or null | Optional | References `users.id` |
-| `checkOutStaffName` | string or null | Optional | Denormalized staff display name |
+| `checkOutStaffId` | string or null | Optional | References `users.id`; populated when staff/admin approves student direct check-out or performs staff-assisted check-out |
+| `checkOutStaffName` | string or null | Optional | Denormalized staff display name for the approving/performing staff member |
 | `pickupPersonId` | string or null | Optional | Reserved for richer pickup records |
 | `pickupPerson` | string or null | Optional | Pickup display name |
 | `pickupPersonName` | string or null | Optional | Duplicate compatibility field |
@@ -243,11 +243,15 @@ Current UI does not query `authorized_pickups` directly.
 stateDiagram-v2
   [*] --> NotCheckedIn
   NotCheckedIn --> CheckedIn: checkInTime set\nstatus=checked_in
-  CheckedIn --> CheckedOut: checkOutTime set\npickupPerson set\nstatus=checked_out
+  CheckedIn --> CheckedOut: checkOutTime set\npickupPerson set\nstaff approval captured\nstatus=checked_out
   CheckedOut --> CheckedIn: admin correction clears checkOutTime
   CheckedIn --> Deleted: admin delete
   CheckedOut --> Deleted: admin delete
 ```
+
+## Checkout Authorization Notes
+
+Student direct check-out now requires a staff/admin approval step before the attendance record is saved as `checked_out`. The approving user is recorded in `checkOutStaffId` and `checkOutStaffName`. In the current MVP, this verification happens in the browser through `StaffApprovalModal`; production rules or backend logic should enforce the same requirement server-side.
 
 ## Date and Time Conventions
 

@@ -15,7 +15,7 @@ Start here:
 5. [Operations and Deployment](./docs/05-operations-and-deployment.md)
 6. [Security and Production Readiness](./docs/06-security-and-production-readiness.md)
 7. [Tech Stack and Dependencies](./docs/07-tech-stack-and-dependencies.md)
-8. [Credentials](./docs/08-credentials.md)
+8. [Credentials](./docs/08-CREDENTIALS.md)
 
 ## Run Locally
 
@@ -41,4 +41,4 @@ npm run build
 
 ## Important MVP Warning
 
-This project currently uses client-side MVP authentication, open Firestore rules, plaintext demo passwords, and simulated SMS delivery. Do not use real student data until the production hardening items in [Security and Production Readiness](./docs/06-security-and-production-readiness.md) are complete.
+This project now includes Firebase Auth for staff/admin sign-in with Firestore-backed app profiles, but it still keeps MVP fallbacks, open Firestore rules, plaintext demo/fallback passwords, and simulated SMS delivery. Student direct check-out requires staff/admin approval via the Staff Password / Security PIN modal. Do not use real student data until the production hardening items in [Security and Production Readiness](./docs/06-security-and-production-readiness.md) are complete.

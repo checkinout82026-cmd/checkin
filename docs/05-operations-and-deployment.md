@@ -5,6 +5,7 @@
 - Node.js installed.
 - npm installed.
 - Firebase project access if testing against the live configured project.
+- Firebase Authentication enabled if testing staff/admin email/password sign-in.
 
 The repository includes both `package-lock.json` and `bun.lock`. The current documented path uses npm because `package.json` scripts are standard npm scripts and `package-lock.json` is present.
 
@@ -56,7 +57,7 @@ The config includes:
 - `messagingSenderId`
 - optional `measurementId`
 
-The current Firestore database ID is configured through `firestoreDatabaseId`. `src/lib/firebase.ts` chooses:
+`src/lib/firebase.ts` initializes both Firebase Auth and Firestore. The current Firestore database ID is configured through `firestoreDatabaseId`. `src/lib/firebase.ts` chooses:
 
 - `getFirestore(app, config.firestoreDatabaseId)` when the configured database is not `(default)`.
 - `getFirestore(app)` otherwise.
@@ -64,12 +65,39 @@ The current Firestore database ID is configured through `firestoreDatabaseId`. `
 ```mermaid
 flowchart LR
   Config[firebase-applet-config.json] --> Init[src/lib/firebase.ts]
+  Init --> Auth[Firebase Auth]
   Init --> HasDb{firestoreDatabaseId exists and not default?}
   HasDb -->|Yes| NamedDB[getFirestore app, databaseId]
   HasDb -->|No| DefaultDB[getFirestore app]
   NamedDB --> Firestore[(Firestore)]
   DefaultDB --> Firestore
 ```
+
+## Firebase Authentication Setup
+
+Staff/admin authentication is implemented in `src/lib/auth.ts` and used by `src/components/Login.tsx` and `src/App.tsx`.
+
+Supported flows:
+
+| Flow | Implementation |
+| --- | --- |
+| Email/password sign-in | `signInWithEmailAndPassword(auth, email, password)` |
+| Google sign-in | Not completed for the delivered flow |
+| Password reset | Not completed for the delivered flow |
+| Auth state restore | `onAuthStateChanged(auth, callback)` |
+| App user profile | Firestore `users/{uid}` document mapped to the app `User` shape |
+
+Firebase Console checklist:
+
+1. Open the configured Firebase project.
+2. Go to **Authentication > Sign-in method**.
+3. Enable **Email/Password** for staff/admin login.
+4. Add the deployed domain and local development host to **Authentication > Settings > Authorized domains**.
+5. Confirm Firestore has matching `users` documents for staff/admin profiles, or allow the app to create/sync profiles during sign-in.
+
+Google sign-in and password reset are not completed in the delivered workflow. If they are required, enable/configure the Firebase providers, complete the UI flow, and test the end-to-end behavior before documenting them as supported.
+
+MVP fallback behavior: if Firebase Auth is unavailable, disabled, or a user has not been created in Auth yet, `signInWithEmail()` attempts to match Firestore/local `users` credentials. This keeps demos working, but it means plaintext fallback passwords may still exist in Firestore and must be removed for production.
 
 ## Environment Variables
 
@@ -176,9 +204,10 @@ sequenceDiagram
 | Login accepts stale users | `localStorage.checkin_users` still has old data | Clear site data or localStorage |
 | Student list differs across devices | One device is using local fallback because Firestore failed | Console logs and Firestore rules |
 | Duplicate attendance for same student/day | UI race or manual admin record | Search `attendance` by `studentId` and `date` |
-| Staff/admin cannot login | User missing from `users` or password mismatch | Firestore `users` collection and localStorage cache |
+| Staff/admin cannot login | Firebase Auth provider disabled, user missing from Firebase Auth/Firestore `users`, or password mismatch | Firebase Auth sign-in methods, authorized domains, Firestore `users` collection, and localStorage cache |
 | Build fails on TypeScript | Type mismatch or dependency issue | Run `npm run lint` and inspect output |
 | SMS was not actually sent | SMS is simulated in current MVP | Integrate real provider before production |
+| Student direct check-out is blocked | Staff approval modal requires a valid staff/admin password or security PIN | Select an active staff/admin user and enter their stored password/PIN; check `users` data if validation fails |
 
 ## Browser Storage Reset
 
@@ -202,6 +231,6 @@ The receiving team should own:
 - Firestore rules deployment.
 - Hosting deployment.
 - SMS provider integration.
-- Production authentication.
+- Firebase Auth provider configuration and production authentication policy.
 - Monitoring and error reporting.
 

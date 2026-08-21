@@ -9,12 +9,13 @@ This MVP is suitable for prototype/demo use only. It should not be used with rea
 | Risk | Current state | Impact | Required fix |
 | --- | --- | --- | --- |
 | Open Firestore rules | `allow read, write: if true` for all app collections | Anyone with app config can read/write all records | Replace with authenticated, least-privilege rules |
-| Plaintext passwords | `users.password` is stored/read in browser | Account compromise and credential leakage | Use Firebase Auth or an identity provider |
-| Client-side authorization | UI routes based on `user.role` in localStorage | Users can tamper with role/session in browser | Enforce roles in backend/rules/custom claims |
-| Student PII in browser | Student/parent info syncs to any connected client | Privacy exposure | Restrict reads by role and operational need |
+| Plaintext fallback passwords | Firebase Auth is integrated, but `users.password` can still be stored/read in browser for MVP fallback and staff approval | Account compromise and credential leakage | Remove plaintext fallback passwords; use Firebase Auth/custom claims or server-side staff approval |
+| Client-side authorization | UI routes based on `user.role` from Firestore/localStorage/Firebase profile mapping | Users can tamper with role/session or fallback profile data in browser | Enforce roles in backend/rules/custom claims |
+| Student PII in browser | Student/parent info syncs to any connected client allowed by current rules | Privacy exposure | Restrict reads by authenticated role and operational need |
 | Simulated SMS | App marks SMS as sent without external delivery | False operational confidence | Add real SMS provider and delivery status |
 | Editable/deletable audit records | Admin can mutate/delete attendance logs | Weak audit trail | Add append-only correction ledger or immutable audit events |
 | No data validation in rules | Firestore accepts arbitrary document shapes | Corrupt/unsafe data | Add rule-level validation and server-side validation |
+| Staff PIN approval is client-side | Student direct check-out requires `StaffApprovalModal`, but verification happens in the browser | A tampered client could bypass approval or forge `checkOutStaffId` | Enforce checkout approval with Firestore rules, custom claims, Cloud Functions, or a backend API |
 
 ## Current Firestore Rules
 
@@ -79,13 +80,16 @@ flowchart TB
 
 ## Authentication Migration Plan
 
-1. Add Firebase Authentication or another IdP.
-2. Create real admin/staff accounts outside Firestore `users.password`.
-3. Assign role claims (`admin`, `staff`, optionally `student`) through a trusted server process.
-4. Replace `Login.tsx` credential checks with Firebase Auth sign-in.
-5. Remove `password` from Firestore `users`.
+Firebase Auth has been integrated for staff/admin email/password sign-in and auth-state restore. Google sign-in and password reset are not completed in the delivered workflow. Remaining production migration work:
+
+1. Ensure all real staff/admin users are created in Firebase Auth.
+2. Complete and test Google sign-in and password reset only if those flows are required.
+3. Remove `password` from Firestore `users` and eliminate Firestore/local credential fallback in `src/lib/auth.ts`.
+4. Assign role claims (`admin`, `staff`, optionally `student`) through a trusted server process.
+5. Treat Firestore `users.role` as display/profile data only, not as the source of authorization.
 6. Stop storing the full active user object as authority in `localStorage`.
 7. Use ID token claims and Firestore rules for enforcement.
+8. Move staff approval for student direct check-out to server-enforced logic or strict Firestore rules.
 
 ## Firestore Rules Hardening Plan
 
@@ -109,6 +113,7 @@ Minimum rule requirements:
 - Prevent direct password reads/writes.
 - Validate required attendance fields.
 - Restrict student self-service writes to that student's own records.
+- Require staff/admin authorization fields for checkout transitions, especially student direct check-out.
 - Prevent non-admin deletes.
 - Prefer soft-delete or correction records over hard deletes.
 
@@ -173,10 +178,10 @@ Recommended correction shape:
 Do not go live with real student data until:
 
 - Firestore rules are locked down.
-- Password login is replaced.
+- Plaintext fallback password login is removed and Firebase Auth/role claims are enforced.
 - SMS is real or clearly disabled in product copy.
 - Admin destructive actions are audited.
 - Firestore backups/exports are configured.
 - Hosting environment is controlled by the receiving team.
-- Acceptance testing covers all role workflows.
+- Acceptance testing covers all role workflows, including student direct check-out requiring staff/admin PIN approval.
 
