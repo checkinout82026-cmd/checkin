@@ -4,19 +4,19 @@
 
 - URL: https://checkin-out2026.netlify.app/
 
-## Demo App Credentials
+### Demo App Credentials
 
 Use these demo accounts for MVP testing only.
 
-### Admin
+#### Admin
 
 - Email: `smith.admin@school.com`
-- Password / security PIN: `AdminSmith#2026`
+- Password: `AdminSmith#2026`
 
-### Staff
+#### Staff
 
 - Email: `adams.staff@school.com`
-- Password / security PIN: `StaffAdams#2026`
+- Password: `StaffAdams#2026`
 
 ## Student Direct Check-Out Approval
 
