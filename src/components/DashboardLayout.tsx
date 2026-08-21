@@ -82,17 +82,6 @@ export function DashboardLayout({ user, onLogout, children, activeTab, setActive
         </nav>
 
         <div className="p-4 border-t border-[#e5e1da] space-y-3">
-          <div className="px-3 py-2 bg-[#f8f6f3] border border-[#edeae6] rounded-xl flex items-center justify-between text-[11px] text-[#8c8a86]">
-            <div className="flex items-center gap-1.5 font-medium">
-              <Database size={13} className="text-[#82937f]" />
-              <span>Firestore</span>
-            </div>
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase text-[#82937f]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#82937f]"></span>
-              Live
-            </span>
-          </div>
-
           <button 
             onClick={onLogout}
             className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium rounded-lg text-[#d98466] hover:bg-[#f2efe9] transition-colors"
