@@ -138,7 +138,7 @@ export function StaffApprovalModal({
 
           <div>
             <label className="block text-[10px] uppercase tracking-widest text-[#8c8a86] font-bold mb-1.5">
-              Staff Password / Security PIN
+              Staff Password
             </label>
             <div className="relative">
               <input
