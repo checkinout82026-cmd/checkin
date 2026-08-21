@@ -14,8 +14,6 @@
 
 ## Google account 
 
-- email - `checkinout82026@gmail.com`
-- password - `checkin123`
 
 -----
 
