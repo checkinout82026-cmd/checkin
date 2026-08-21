@@ -1,20 +1,44 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# ABC Community School Check-In System
 
-# Run and deploy your AI Studio app
+MVP student check-in/check-out system built with Vite, React, TypeScript, Tailwind CSS, and Firebase Firestore.
 
-This contains everything you need to run your app locally.
+## Handover Documentation
 
-View your app in AI Studio: https://ai.studio/apps/4141448b-e367-448b-97a3-dc964e7f7642
+The complete handover pack is in [docs/](./docs/README.md).
+
+Start here:
+
+1. [Overview](./docs/01-overview.md)
+2. [Architecture](./docs/02-architecture.md)
+3. [Data Model and Schema](./docs/03-data-model-and-schema.md)
+4. [User Flows](./docs/04-user-flows.md)
+5. [Operations and Deployment](./docs/05-operations-and-deployment.md)
+6. [Security and Production Readiness](./docs/06-security-and-production-readiness.md)
+7. [Handover Checklist](./docs/07-handover-checklist.md)
+8. [Tech Stack and Dependencies](./docs/08-tech-stack-and-dependencies.md)
 
 ## Run Locally
 
-**Prerequisites:**  Node.js
+Prerequisite: Node.js.
 
+```bash
+npm install
+npm run dev
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+The app runs on:
+
+```text
+http://localhost:3000
+```
+
+## Build and Check
+
+```bash
+npm run lint
+npm run build
+```
+
+## Important MVP Warning
+
+This project currently uses client-side MVP authentication, open Firestore rules, plaintext demo passwords, and simulated SMS delivery. Do not use real student data until the production hardening items in [Security and Production Readiness](./docs/06-security-and-production-readiness.md) are complete.
