@@ -2,6 +2,13 @@
 
 - URL - https://checkin-out2026.netlify.app/
 
+- admin credentials
+  - email - smith.admin@school.com
+  - password - AdminSmith#2026
+- staff credentials
+  - email - adams.staff@school.com
+  - password - StaffAdams#2026
+
 ----
 
 ## Github Repo - 
