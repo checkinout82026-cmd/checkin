@@ -66,10 +66,6 @@ export function Login({ onLogin }: LoginProps) {
           <div className="w-16 h-16 bg-[#82937f] rounded-2xl flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">A</div>
           <h1 className="text-3xl font-serif font-medium tracking-tight text-[#4a4a48]">ABC Community School</h1>
           <p className="text-[#8c8a86] mt-1.5 text-sm">Attendance & Student Management System</p>
-          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-[#82937f10] text-[#82937f] border border-[#82937f25] rounded-full text-[10px] font-bold uppercase tracking-wider">
-            <Database size={12} />
-            Firebase Firestore Connected
-          </div>
         </div>
 
         <div className="flex bg-[#f8f6f3] p-1.5 rounded-2xl mb-6">

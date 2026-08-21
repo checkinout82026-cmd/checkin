@@ -2,9 +2,9 @@
 
 MVP student check-in/check-out system built with Vite, React, TypeScript, Tailwind CSS, and Firebase Firestore.
 
-## Handover Documentation
+## Documentation
 
-The complete handover pack is in [docs/](./docs/README.md).
+The complete documentation is in [docs/](./docs/README.md).
 
 Start here:
 
@@ -14,8 +14,8 @@ Start here:
 4. [User Flows](./docs/04-user-flows.md)
 5. [Operations and Deployment](./docs/05-operations-and-deployment.md)
 6. [Security and Production Readiness](./docs/06-security-and-production-readiness.md)
-7. [Handover Checklist](./docs/07-handover-checklist.md)
-8. [Tech Stack and Dependencies](./docs/08-tech-stack-and-dependencies.md)
+7. [Tech Stack and Dependencies](./docs/07-tech-stack-and-dependencies.md)
+8. [Credentials](./docs/08-credentials.md)
 
 ## Run Locally
 

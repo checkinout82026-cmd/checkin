@@ -10,8 +10,8 @@ Read these files in order:
 4. [User Flows](./04-user-flows.md) - student, staff, and admin workflows with sequence diagrams.
 5. [Operations and Deployment](./05-operations-and-deployment.md) - local setup, build, Firebase setup, seed data, and troubleshooting.
 6. [Security and Production Readiness](./06-security-and-production-readiness.md) - current risks, required hardening, and production path.
-7. [Handover Checklist](./07-handover-checklist.md) - final transfer checklist and recommended acceptance questions.
-8. [Tech Stack and Dependencies](./08-tech-stack-and-dependencies.md) - libraries, scripts, build output, and dependency notes.
+7. [Tech Stack and Dependencies](./07-tech-stack-and-dependencies.md) - libraries, scripts, build output, and dependency notes.
+8. [Credentials](./08-credentials.md) - Firebase credentials, environment variables, and access control.
 
 ## Current MVP Summary
 
