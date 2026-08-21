@@ -298,7 +298,7 @@ export function Login({ onLogin }: LoginProps) {
                   className="w-full bg-[#82937f] hover:opacity-90 text-white font-bold py-4 rounded-2xl transition-all mt-2 flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? <Loader2 size={18} className="animate-spin" /> : <Shield size={18} />}
-                  Sign In with Firebase Auth
+                  Sign In
                 </button>
               </form>
             )}

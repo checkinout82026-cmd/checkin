@@ -82,6 +82,30 @@ export const db = {
     }
   },
 
+  loadUsersFromFirestore: async (): Promise<User[]> => {
+    try {
+      const usersSnap = await getDocs(collection(firestore, 'users'));
+      const list: User[] = [];
+      usersSnap.forEach(docSnap => {
+        const data = docSnap.data() as User;
+        list.push({ ...data, id: data.id || docSnap.id });
+      });
+
+      if (!list.some(u => u.email?.toLowerCase() === 'smith.admin@school.com' || u.username === 'smith.admin')) {
+        list.unshift(defaultUsers[0]);
+        await setDoc(doc(firestore, 'users', 'admin_smith'), defaultUsers[0], { merge: true });
+      }
+
+      const nextUsers = list.length > 0 ? list : defaultUsers;
+      cachedUsers = nextUsers;
+      localStorage.setItem(USERS_KEY, JSON.stringify(nextUsers));
+      return nextUsers;
+    } catch (err) {
+      console.warn('Firestore loadUsers error (using local users):', err);
+      return db.getUsers();
+    }
+  },
+
   saveUser: async (user: User) => {
     const current = db.getUsers();
     const index = current.findIndex(u => u.id === user.id);
@@ -518,29 +542,8 @@ export const db = {
 
     // Check & seed Firestore collections
     try {
+      await db.loadUsersFromFirestore();
       const usersSnap = await getDocs(collection(firestore, 'users'));
-      const smithAdmin = defaultUsers[0];
-      const hasSmithAdmin = usersSnap.docs.some(d => {
-        const data = d.data();
-        return data.email?.toLowerCase() === 'smith.admin@school.com' || data.username === 'smith.admin';
-      });
-
-      if (!hasSmithAdmin) {
-        console.log('Explicitly creating smith.admin in Firestore users collection...');
-        await setDoc(doc(firestore, 'users', 'admin_smith'), {
-          id: 'admin_smith',
-          username: smithAdmin.username,
-          password: smithAdmin.password,
-          name: smithAdmin.name,
-          fullName: smithAdmin.fullName,
-          email: smithAdmin.email,
-          phone: smithAdmin.phone,
-          role: smithAdmin.role,
-          isActive: true,
-          createdAt: smithAdmin.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-      }
 
       // Clean up legacy users (u1, u2, u3, u4) from Firestore
       const legacyIds = ['u1', 'u2', 'u3', 'u4'];

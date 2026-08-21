@@ -38,7 +38,7 @@ export async function getAppUserFromFirebase(firebaseUser: FirebaseUser): Promis
     }
 
     // Check if user exists by email matching in existing users
-    const allUsers = await db.getUsers();
+    const allUsers = await db.loadUsersFromFirestore();
     const existing = allUsers.find(u => u.email?.toLowerCase() === email.toLowerCase() || u.username?.toLowerCase() === email.split('@')[0]?.toLowerCase());
     
     const role: Role = existing ? existing.role : (email.toLowerCase().includes('admin') ? 'admin' : 'staff');
@@ -81,7 +81,7 @@ export async function signInWithEmail(emailOrUsername: string, password: string)
   
   // If username was entered (e.g. 'smith.admin'), check if it maps to an email in Firestore/seed
   if (!email.includes('@')) {
-    const allUsers = await db.getUsers();
+    const allUsers = await db.loadUsersFromFirestore();
     const match = allUsers.find(u => u.username.toLowerCase() === email.toLowerCase());
     if (match && match.email) {
       email = match.email;
@@ -100,7 +100,7 @@ export async function signInWithEmail(emailOrUsername: string, password: string)
 
     // If Email/Password provider is not enabled in Firebase Console (auth/operation-not-allowed)
     // or user is not yet created in Auth, authenticate directly with Firestore / Database
-    const allUsers = await db.getUsers();
+    const allUsers = await db.loadUsersFromFirestore();
     const match = allUsers.find(u => 
       (u.email?.toLowerCase() === email.toLowerCase() || 
        u.email?.toLowerCase() === cleanInput.toLowerCase() || 

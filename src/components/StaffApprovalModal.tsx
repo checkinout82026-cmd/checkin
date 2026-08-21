@@ -26,15 +26,25 @@ export function StaffApprovalModal({
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (isOpen) {
-      setStaffPassword('');
-      setErrorMessage('');
-      const users = db.getUsers().filter(u => u.role === 'staff' || u.role === 'admin');
-      setStaffUsers(users);
-      if (users.length > 0) {
-        setSelectedStaffId(users[0].id);
-      }
-    }
+    if (!isOpen) return;
+
+    let isMounted = true;
+    setStaffPassword('');
+    setErrorMessage('');
+
+    const applyUsers = (users: User[]) => {
+      if (!isMounted) return;
+      const approvers = users.filter(u => u.isActive !== false && (u.role === 'staff' || u.role === 'admin'));
+      setStaffUsers(approvers);
+      setSelectedStaffId(current => current && approvers.some(u => u.id === current) ? current : approvers[0]?.id || '');
+    };
+
+    applyUsers(db.getUsers());
+    db.loadUsersFromFirestore().then(applyUsers);
+
+    return () => {
+      isMounted = false;
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
