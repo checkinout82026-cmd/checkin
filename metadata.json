@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Check-In System",
+  "description": "Student check-in and check-out management system for staff and administrators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

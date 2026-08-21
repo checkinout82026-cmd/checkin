@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "collection": "users",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "username": { "type": "string", "required": true },
+        "password": { "type": "string", "required": false },
+        "fullName": { "type": "string", "required": true },
+        "email": { "type": "string", "required": false },
+        "phone": { "type": "string", "required": false },
+        "role": { "type": "string", "required": true, "enum": ["admin", "staff", "student"] },
+        "isActive": { "type": "boolean", "required": true },
+        "createdAt": { "type": "string", "required": true },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    },
+    "Student": {
+      "collection": "students",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "userId": { "type": "string", "required": false },
+        "fullName": { "type": "string", "required": true },
+        "gradeLevel": { "type": "string", "required": false },
+        "parentName": { "type": "string", "required": true },
+        "parentPhone": { "type": "string", "required": true },
+        "parentEmail": { "type": "string", "required": false },
+        "authorizedPickups": { "type": "array", "required": false },
+        "notes": { "type": "string", "required": false },
+        "isActive": { "type": "boolean", "required": true },
+        "createdAt": { "type": "string", "required": true },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    },
+    "AuthorizedPickup": {
+      "collection": "authorized_pickups",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "studentId": { "type": "string", "required": true },
+        "name": { "type": "string", "required": true },
+        "relationship": { "type": "string", "required": false },
+        "phone": { "type": "string", "required": false },
+        "isPrimary": { "type": "boolean", "required": false },
+        "createdAt": { "type": "string", "required": true }
+      }
+    },
+    "AttendanceRecord": {
+      "collection": "attendance",
+      "fields": {
+        "id": { "type": "string", "required": true },
+        "studentId": { "type": "string", "required": true },
+        "studentName": { "type": "string", "required": false },
+        "date": { "type": "string", "required": true },
+        "status": { "type": "string", "required": true, "enum": ["checked_in", "checked_out", "absent", "excused"] },
+        "checkInTime": { "type": "string", "required": false },
+        "checkInStaffId": { "type": "string", "required": false },
+        "checkInMethod": { "type": "string", "required": false },
+        "checkOutTime": { "type": "string", "required": false },
+        "checkOutStaffId": { "type": "string", "required": false },
+        "pickupPersonId": { "type": "string", "required": false },
+        "pickupPerson": { "type": "string", "required": false },
+        "pickupPersonName": { "type": "string", "required": false },
+        "smsNotificationSent": { "type": "boolean", "required": false },
+        "smsSentAt": { "type": "string", "required": false },
+        "notes": { "type": "string", "required": false },
+        "createdAt": { "type": "string", "required": true },
+        "updatedAt": { "type": "string", "required": true }
+      }
+    }
+  }
+}
